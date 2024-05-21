@@ -4,7 +4,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/admin",
+      path: "/",
       name: "admin-layout",
       component: () => import("../layout/AdminLayout.vue"),
       meta: {
