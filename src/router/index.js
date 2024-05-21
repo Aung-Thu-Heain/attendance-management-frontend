@@ -4,12 +4,19 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/",
-      name: "home",
-      component: () => import("@dashboards/AdminDashboard.vue"),
+      path: "/admin",
+      name: "admin-layout",
+      component: () => import("../layout/AdminLayout.vue"),
       meta: {
         isAuthRoute: true,
       },
+      children: [
+        {
+          path: "dashboard",
+          name: "admin-dashboard",
+          component: () => import("@dashboards/AdminDashboard.vue"),
+        },
+      ],
     },
   ],
 });
