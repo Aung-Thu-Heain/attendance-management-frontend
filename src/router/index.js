@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: "/",
       name: "admin-layout",
-      component: () => import("../layout/AdminLayout.vue"),
+      component: () => import("@layouts/AdminLayout.vue"),
       meta: {
         isAuthRoute: true,
       },
@@ -15,6 +15,18 @@ const router = createRouter({
           path: "dashboard",
           name: "admin-dashboard",
           component: () => import("@dashboards/AdminDashboard.vue"),
+        },
+      ],
+    },
+    {
+      path: "/admin",
+      name: "login",
+      component: () => import("@layouts/AuthLayout.vue"),
+      children: [
+        {
+          path: "/login",
+          name: "login",
+          component: () => import("@components/auth/Login.vue"),
         },
       ],
     },
