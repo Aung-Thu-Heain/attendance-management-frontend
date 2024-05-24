@@ -2,18 +2,30 @@
   <v-data-table
     :headers="headers"
     :items="desserts"
+    :search="search"
+    class="pa-5"
     :sort-by="[{ key: 'calories', order: 'asc' }]"
-    class="pa-3"
   >
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Users List</v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
+        <!-- <v-toolbar-title>User List</v-toolbar-title> -->
+        <v-text-field
+          v-model="search"
+          label="Search"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          hide-details
+          single-line
+          class="search_box"
+        ></v-text-field>
+
+        <!-- <v-divider class="mx-4" inset vertical></v-divider> -->
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
             <v-btn class="mb-2" color="primary" dark v-bind="props">
-              New Item
+              <span class="mdi mdi-plus"></span>
+              Create user
             </v-btn>
           </template>
           <v-card>
@@ -91,6 +103,7 @@
         </v-dialog>
       </v-toolbar>
     </template>
+
     <template v-slot:item.actions="{ item }">
       <v-icon class="me-2" size="small" @click="editItem(item)">
         mdi-pencil
@@ -102,178 +115,118 @@
     </template>
   </v-data-table>
 </template>
-<script>
-export default {
-  data: () => ({
-    dialog: false,
-    dialogDelete: false,
-    headers: [
-      {
-        title: "Dessert (100g serving)",
-        align: "start",
-        sortable: false,
-        key: "name",
+<script setup>
+import axios from "axios";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+
+const dialog = ref(false);
+const search = ref("");
+const dialogDelete = ref(false);
+const headers = ref([
+  {
+    title: "Id",
+    align: "start",
+    sortable: false,
+    key: "id",
+  },
+  { title: "Name", key: "name" },
+  { title: "Email", key: "email" },
+  { title: "Classroom", key: "classroom" },
+  { title: "Role", key: "roles[0]" },
+  { title: "Actions", key: "actions", sortable: false },
+]);
+const desserts = ref([]);
+const editedIndex = ref(-1);
+const editedItem = ref({
+  id: 0,
+  name: "",
+  email: "",
+  class: "",
+  roles: "",
+  classroom: "",
+});
+const defaultItem = ref({
+  id: "",
+  name: "",
+  email: "",
+  class: "",
+  roles: "",
+  classroom: "",
+});
+const formTitle = computed(() => {
+  return editedIndex.value === -1 ? "New Item" : "Edit Item";
+});
+async function initialize() {
+  const token = "dbDXyLlOp13X0XZ2S1RvBwjRbxePg2m1kn44mIw0aff17740";
+
+  const response = await axios.get(
+    "http://attendance-management-backend.test/api/users",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
-      { title: "Calories", key: "calories" },
-      { title: "Fat (g)", key: "fat" },
-      { title: "Carbs (g)", key: "carbs" },
-      { title: "Protein (g)", key: "protein" },
-      { title: "Actions", key: "actions", sortable: false },
-    ],
-    desserts: [],
-    editedIndex: -1,
-    editedItem: {
-      name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
-    },
-    defaultItem: {
-      name: "",
-      calories: 0,
-      fat: 0,
-      carbs: 0,
-      protein: 0,
-    },
-  }),
+    }
+  );
+  console.log(response.data.users);
 
-  computed: {
-    formTitle() {
-      return this.editedIndex === -1 ? "New Item" : "Edit Item";
-    },
-  },
-
-  watch: {
-    dialog(val) {
-      val || this.close();
-    },
-    dialogDelete(val) {
-      val || this.closeDelete();
-    },
-  },
-
-  created() {
-    this.initialize();
-  },
-
-  methods: {
-    initialize() {
-      this.desserts = [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-        },
-        {
-          name: "Ice cream sandwich",
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-        },
-        {
-          name: "Eclair",
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-        },
-        {
-          name: "Cupcake",
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-        },
-        {
-          name: "Gingerbread",
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-        },
-        {
-          name: "Jelly bean",
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-        },
-        {
-          name: "Lollipop",
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-        },
-        {
-          name: "Honeycomb",
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-        },
-        {
-          name: "Donut",
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-        },
-        {
-          name: "KitKat",
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-        },
-      ];
-    },
-
-    editItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
-    deleteItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogDelete = true;
-    },
-
-    deleteItemConfirm() {
-      this.desserts.splice(this.editedIndex, 1);
-      this.closeDelete();
-    },
-
-    close() {
-      this.dialog = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
-    closeDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
-
-    save() {
-      if (this.editedIndex > -1) {
-        Object.assign(this.desserts[this.editedIndex], this.editedItem);
-      } else {
-        this.desserts.push(this.editedItem);
-      }
-      this.close();
-    },
-  },
-};
+  desserts.value = response.data.users;
+}
+function editItem(item) {
+  editedIndex.value = desserts.value.indexOf(item);
+  editedItem.value = Object.assign({}, item);
+  dialog.value = true;
+}
+function deleteItem(item) {
+  editedIndex.value = desserts.value.indexOf(item);
+  editedItem.value = Object.assign({}, item);
+  dialogDelete.value = true;
+}
+function deleteItemConfirm() {
+  desserts.value.splice(editedIndex.value, 1);
+  closeDelete();
+}
+function close() {
+  dialog.value = false;
+  nextTick(() => {
+    editedItem.value = Object.assign({}, defaultItem.value);
+    editedIndex.value = -1;
+  });
+}
+function closeDelete() {
+  dialogDelete.value = false;
+  nextTick(() => {
+    editedItem.value = Object.assign({}, defaultItem.value);
+    editedIndex.value = -1;
+  });
+}
+function save() {
+  if (editedIndex.value > -1) {
+    Object.assign(desserts.value[editedIndex.value], editedItem.value);
+  } else {
+    desserts.value.push(editedItem.value);
+  }
+  close();
+}
+watch(dialog, (val) => {
+  val || close();
+});
+watch(dialogDelete, (val) => {
+  val || closeDelete();
+});
+initialize();
 </script>
+
+<style>
+.v-toolbar__content {
+  height: 50px !important;
+}
+.search_box .v-field__field {
+  height: 38px;
+}
+.search_box .v-field--center-affix {
+  margin: 5px;
+}
+.search_box .v-field__input {
+  top: -25%;
+}
+</style>

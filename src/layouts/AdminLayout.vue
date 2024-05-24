@@ -26,13 +26,13 @@
 
         <v-divider></v-divider>
 
-        <!-- <router-link :to="{ name: 'admin-roles' }">
+        <router-link :to="{ name: 'admin-roles' }">
           <v-list-item
             prepend-icon="mdi-security"
             title="Roles"
             value="roles"
           ></v-list-item>
-        </router-link> -->
+        </router-link>
 
         <v-divider></v-divider>
 

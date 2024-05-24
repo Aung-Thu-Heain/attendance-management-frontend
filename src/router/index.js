@@ -26,8 +26,6 @@ const router = createRouter({
           name: "admin-users",
           component: () => import("@dashboards/Users.vue"),
         },
-      ],
-      children: [
         {
           path: "roles",
           name: "admin-roles",
