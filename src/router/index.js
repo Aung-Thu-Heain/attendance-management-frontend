@@ -5,6 +5,11 @@ const router = createRouter({
   routes: [
     {
       path: "/",
+      name: "home",
+      component: () => import("@pages/Home.vue"),
+    },
+    {
+      path: "/dashboard",
       name: "admin-layout",
       component: () => import("@layouts/AdminLayout.vue"),
       meta: {
@@ -19,16 +24,9 @@ const router = createRouter({
       ],
     },
     {
-      path: "/admin",
+      path: "/login",
       name: "login",
-      component: () => import("@layouts/AuthLayout.vue"),
-      children: [
-        {
-          path: "/login",
-          name: "login",
-          component: () => import("@components/auth/Login.vue"),
-        },
-      ],
+      component: () => import("@components/auth/Login.vue"),
     },
   ],
 });
