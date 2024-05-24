@@ -113,7 +113,7 @@ let onSubmit = async () => {
       "http://attendance-management-backend.test/api/login",
       formData
     );
-    localStorage.setItem("token", response.data);
+    localStorage.setItem("token", response.data.token);
     router.push({ name: "admin-dashboard" });
   } catch (e) {
     error.value = e.response.data.message;
