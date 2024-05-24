@@ -1,8 +1,8 @@
 <template>
   <v-layout class="rounded rounded-md">
-    <router-link :to="{ name: 'admin-dashboard' }">
-      <v-app-bar title="Attendance Management System"></v-app-bar>
-    </router-link>
+    <!-- <router-link :to="{ name: 'admin-dashboard' }"> -->
+    <v-app-bar title="Attendance Management System"></v-app-bar>
+    <!-- </router-link> -->
 
     <v-navigation-drawer expand-on-hover rail>
       <v-list>

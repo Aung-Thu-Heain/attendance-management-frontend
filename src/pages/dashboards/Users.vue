@@ -217,9 +217,6 @@ initialize();
 </script>
 
 <style>
-.v-toolbar__content {
-  height: 50px !important;
-}
 .search_box .v-field__field {
   height: 38px;
 }
