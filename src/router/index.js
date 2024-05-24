@@ -9,24 +9,31 @@ const router = createRouter({
       component: () => import("@pages/Home.vue"),
     },
     {
+      path: "/login",
+      name: "login",
+      component: () => import("@components/auth/Login.vue"),
+    },
+    {
       path: "/dashboard",
-      name: "admin-layout",
+      name: "admin-dashboard",
       component: () => import("@layouts/AdminLayout.vue"),
       meta: {
         isAuthRoute: true,
       },
       children: [
         {
-          path: "dashboard",
-          name: "admin-dashboard",
-          component: () => import("@dashboards/AdminDashboard.vue"),
+          path: "users",
+          name: "admin-users",
+          component: () => import("@dashboards/Users.vue"),
         },
       ],
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: () => import("@components/auth/Login.vue"),
+      children: [
+        {
+          path: "roles",
+          name: "admin-roles",
+          component: () => import("@dashboards/Roles.vue"),
+        },
+      ],
     },
   ],
 });

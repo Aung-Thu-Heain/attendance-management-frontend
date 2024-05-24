@@ -7,3 +7,11 @@
 <script setup>
 //
 </script>
+
+<style>
+a:-webkit-any-link {
+  color: -webkit-link;
+  cursor: pointer;
+  text-decoration: none !important;
+}
+</style>

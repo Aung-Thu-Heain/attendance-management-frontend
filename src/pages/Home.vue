@@ -2,7 +2,7 @@
   <div id="clock">
     <p class="date">{{ date }}</p>
     <p class="time">{{ time }}</p>
-    <p class="text">ကျောင်းမှန်မှန်တက် စာမခက်</p>
+    <p class="text font-weight-black">ကျောင်းမှန်မှန်တက် စာမခက်</p>
   </div>
 </template>
 <script setup>
