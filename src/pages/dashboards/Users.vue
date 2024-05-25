@@ -4,11 +4,10 @@
     :items="desserts"
     :search="search"
     class="pa-5"
-    :sort-by="[{ key: 'calories', order: 'asc' }]"
+    :sort-by="[{ key: 'id', order: 'asc' }]"
   >
     <template v-slot:top>
       <v-toolbar flat>
-        <!-- <v-toolbar-title>User List</v-toolbar-title> -->
         <v-text-field
           v-model="search"
           label="Search"
@@ -19,7 +18,6 @@
           class="search_box"
         ></v-text-field>
 
-        <!-- <v-divider class="mx-4" inset vertical></v-divider> -->
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
@@ -28,6 +26,7 @@
               Create user
             </v-btn>
           </template>
+
           <v-card>
             <v-card-title>
               <span class="text-h5">{{ formTitle }}</span>
@@ -36,35 +35,33 @@
             <v-card-text>
               <v-container>
                 <v-row>
-                  <v-col cols="12" md="4" sm="6">
+                  <v-col cols="12" md="6" sm="6">
                     <v-text-field
                       v-model="editedItem.name"
-                      label="Dessert name"
+                      label="Name"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
+                  <v-col cols="12" md="6" sm="6">
                     <v-text-field
-                      v-model="editedItem.calories"
-                      label="Calories"
+                      v-model="editedItem.email"
+                      label="Email"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field
-                      v-model="editedItem.fat"
-                      label="Fat (g)"
-                    ></v-text-field>
+                  <v-col cols="12" md="6" sm="6">
+                    <v-select
+                      v-model="editedItem.classroom"
+                      :items="classroomsList"
+                      label="Class"
+                    ></v-select>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field
-                      v-model="editedItem.carbs"
-                      label="Carbs (g)"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field
-                      v-model="editedItem.protein"
-                      label="Protein (g)"
-                    ></v-text-field>
+                  <v-col cols="12" md="12" sm="12">
+                    <v-select
+                      v-model="editedItem.roles"
+                      :items="rolesList"
+                      label="Role"
+                      chips
+                      multiple
+                    ></v-select>
                   </v-col>
                 </v-row>
               </v-container>
@@ -104,6 +101,9 @@
       </v-toolbar>
     </template>
 
+    <template v-slot:item.roles="{ item }">
+      <v-chip v-for="ite in item.roles" :key="ite.id"> {{ ite }} </v-chip>
+    </template>
     <template v-slot:item.actions="{ item }">
       <v-icon class="me-2" size="small" @click="editItem(item)">
         mdi-pencil
@@ -119,6 +119,8 @@
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
+const classroomsList = ref([]);
+const rolesList = ref([]);
 const dialog = ref(false);
 const search = ref("");
 const dialogDelete = ref(false);
@@ -126,13 +128,12 @@ const headers = ref([
   {
     title: "Id",
     align: "start",
-    sortable: false,
     key: "id",
   },
   { title: "Name", key: "name" },
   { title: "Email", key: "email" },
   { title: "Classroom", key: "classroom" },
-  { title: "Role", key: "roles[0]" },
+  { title: "Role", key: "roles" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 const desserts = ref([]);
@@ -141,23 +142,26 @@ const editedItem = ref({
   id: 0,
   name: "",
   email: "",
-  class: "",
-  roles: "",
-  classroom: "",
+  roles: [],
+  classroom: "Kindergarten",
 });
 const defaultItem = ref({
   id: "",
   name: "",
   email: "",
-  class: "",
-  roles: "",
-  classroom: "",
+  roles: [],
+  classroom: "Kindergarten",
+});
+onMounted(() => {
+  getAllClassrooms();
+  getAllRoles();
+  initialize();
 });
 const formTitle = computed(() => {
-  return editedIndex.value === -1 ? "New Item" : "Edit Item";
+  return editedIndex.value === -1 ? "Create user" : "Edit user";
 });
 async function initialize() {
-  const token = "dbDXyLlOp13X0XZ2S1RvBwjRbxePg2m1kn44mIw0aff17740";
+  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
 
   const response = await axios.get(
     "http://attendance-management-backend.test/api/users",
@@ -167,10 +171,42 @@ async function initialize() {
       },
     }
   );
-  console.log(response.data.users);
 
   desserts.value = response.data.users;
 }
+const getAllClassrooms = async () => {
+  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
+
+  const response = await axios.get(
+    "http://attendance-management-backend.test/api/classrooms",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  let classArray = response.data.classrooms.map((item) => item.name);
+
+  classroomsList.value = classArray;
+};
+const getAllRoles = async () => {
+  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
+
+  const response = await axios.get(
+    "http://attendance-management-backend.test/api/roles",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  let rolesArray = response.data.roles.map((item) => item.name);
+  console.log(rolesArray);
+
+  rolesList.value = rolesArray;
+};
 function editItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
@@ -213,7 +249,6 @@ watch(dialog, (val) => {
 watch(dialogDelete, (val) => {
   val || closeDelete();
 });
-initialize();
 </script>
 
 <style>

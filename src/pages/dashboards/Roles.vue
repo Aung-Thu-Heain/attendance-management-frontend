@@ -2,19 +2,31 @@
   <v-data-table
     :headers="headers"
     :items="desserts"
-    :sort-by="[{ key: 'calories', order: 'asc' }]"
+    :search="search"
+    class="pa-5"
+    :sort-by="[{ key: 'id', order: 'asc' }]"
   >
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>My CRUD</v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-text-field
+          v-model="search"
+          label="Search"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          hide-details
+          single-line
+          class="search_box"
+        ></v-text-field>
+
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ props }">
             <v-btn class="mb-2" color="primary" dark v-bind="props">
-              New Item
+              <span class="mdi mdi-plus"></span>
+              Create role
             </v-btn>
           </template>
+
           <v-card>
             <v-card-title>
               <span class="text-h5">{{ formTitle }}</span>
@@ -23,35 +35,21 @@
             <v-card-text>
               <v-container>
                 <v-row>
-                  <v-col cols="12" md="4" sm="6">
+                  <v-col cols="12" md="6" sm="6">
                     <v-text-field
                       v-model="editedItem.name"
-                      label="Dessert name"
+                      label="Name"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field
-                      v-model="editedItem.calories"
-                      label="Calories"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field
-                      v-model="editedItem.fat"
-                      label="Fat (g)"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field
-                      v-model="editedItem.carbs"
-                      label="Carbs (g)"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" md="4" sm="6">
-                    <v-text-field
-                      v-model="editedItem.protein"
-                      label="Protein (g)"
-                    ></v-text-field>
+
+                  <v-col cols="12" md="12" sm="12">
+                    <v-select
+                      v-model="editedItem.permissions"
+                      :items="rolesList"
+                      label="Role"
+                      chips
+                      multiple
+                    ></v-select>
                   </v-col>
                 </v-row>
               </v-container>
@@ -90,6 +88,10 @@
         </v-dialog>
       </v-toolbar>
     </template>
+
+    <template v-slot:item.roles="{ item }">
+      <v-chip v-for="ite in item.roles" :key="ite.id"> {{ ite }} </v-chip>
+    </template>
     <template v-slot:item.actions="{ item }">
       <v-icon class="me-2" size="small" @click="editItem(item)">
         mdi-pencil
@@ -102,116 +104,56 @@
   </v-data-table>
 </template>
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import axios from "axios";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 
+const rolesList = ref([]);
 const dialog = ref(false);
+const search = ref("");
 const dialogDelete = ref(false);
 const headers = ref([
   {
-    title: "Dessert (100g serving)",
+    title: "Id",
     align: "start",
-    sortable: false,
-    key: "name",
+    key: "id",
   },
-  { title: "Calories", key: "calories" },
-  { title: "Fat (g)", key: "fat" },
-  { title: "Carbs (g)", key: "carbs" },
-  { title: "Protein (g)", key: "protein" },
+  { title: "Name", key: "name" },
+  { title: "Permissions", key: "permissions" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 const desserts = ref([]);
 const editedIndex = ref(-1);
 const editedItem = ref({
+  id: 0,
   name: "",
-  calories: 0,
-  fat: 0,
-  carbs: 0,
-  protein: 0,
+  permission: [],
 });
 const defaultItem = ref({
+  id: "",
   name: "",
-  calories: 0,
-  fat: 0,
-  carbs: 0,
-  protein: 0,
+  permissions: [],
+});
+onMounted(() => {
+  initialize();
 });
 const formTitle = computed(() => {
-  return editedIndex.value === -1 ? "New Item" : "Edit Item";
+  return editedIndex.value === -1 ? "Create role" : "Edit role";
 });
-function initialize() {
-  desserts.value = [
+async function initialize() {
+  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
+
+  const response = await axios.get(
+    "http://attendance-management-backend.test/api/roles",
     {
-      name: "Frozen Yogurt",
-      calories: 159,
-      fat: 6,
-      carbs: 24,
-      protein: 4,
-    },
-    {
-      name: "Ice cream sandwich",
-      calories: 237,
-      fat: 9,
-      carbs: 37,
-      protein: 4.3,
-    },
-    {
-      name: "Eclair",
-      calories: 262,
-      fat: 16,
-      carbs: 23,
-      protein: 6,
-    },
-    {
-      name: "Cupcake",
-      calories: 305,
-      fat: 3.7,
-      carbs: 67,
-      protein: 4.3,
-    },
-    {
-      name: "Gingerbread",
-      calories: 356,
-      fat: 16,
-      carbs: 49,
-      protein: 3.9,
-    },
-    {
-      name: "Jelly bean",
-      calories: 375,
-      fat: 0,
-      carbs: 94,
-      protein: 0,
-    },
-    {
-      name: "Lollipop",
-      calories: 392,
-      fat: 0.2,
-      carbs: 98,
-      protein: 0,
-    },
-    {
-      name: "Honeycomb",
-      calories: 408,
-      fat: 3.2,
-      carbs: 87,
-      protein: 6.5,
-    },
-    {
-      name: "Donut",
-      calories: 452,
-      fat: 25,
-      carbs: 51,
-      protein: 4.9,
-    },
-    {
-      name: "KitKat",
-      calories: 518,
-      fat: 26,
-      carbs: 65,
-      protein: 7,
-    },
-  ];
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  desserts.value = response.data.roles;
 }
+
 function editItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
@@ -254,5 +196,16 @@ watch(dialog, (val) => {
 watch(dialogDelete, (val) => {
   val || closeDelete();
 });
-initialize();
 </script>
+
+<style>
+.search_box .v-field__field {
+  height: 38px;
+}
+.search_box .v-field--center-affix {
+  margin: 5px;
+}
+.search_box .v-field__input {
+  top: -25%;
+}
+</style>
