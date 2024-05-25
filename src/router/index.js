@@ -24,12 +24,22 @@ const router = createRouter({
         {
           path: "users",
           name: "admin-users",
-          component: () => import("@dashboards/Users.vue"),
+          component: () => import("@dashboards/User.vue"),
         },
         {
           path: "roles",
           name: "admin-roles",
-          component: () => import("@dashboards/Roles.vue"),
+          component: () => import("@dashboards/Role.vue"),
+        },
+        {
+          path: "classes",
+          name: "admin-classes",
+          component: () => import("@dashboards/Class.vue"),
+        },
+        {
+          path: "settings",
+          name: "admin-settings",
+          component: () => import("@dashboards/Setting.vue"),
         },
       ],
     },

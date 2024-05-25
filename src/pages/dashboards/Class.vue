@@ -23,7 +23,7 @@
           <template v-slot:activator="{ props }">
             <v-btn class="mb-2" color="primary" dark v-bind="props">
               <span class="mdi mdi-plus"></span>
-              Create role
+              Create class
             </v-btn>
           </template>
 
@@ -35,21 +35,11 @@
             <v-card-text>
               <v-container>
                 <v-row>
-                  <v-col cols="12" md="6" sm="6">
+                  <v-col cols="12" md="12" sm="12">
                     <v-text-field
                       v-model="editedItem.name"
                       label="Name"
                     ></v-text-field>
-                  </v-col>
-
-                  <v-col cols="12" md="12" sm="12">
-                    <v-select
-                      v-model="editedItem.permissions"
-                      :items="rolesList"
-                      label="Role"
-                      chips
-                      multiple
-                    ></v-select>
                   </v-col>
                 </v-row>
               </v-container>
@@ -89,8 +79,15 @@
       </v-toolbar>
     </template>
 
-    <template v-slot:item.roles="{ item }">
-      <v-chip v-for="ite in item.roles" :key="ite.id"> {{ ite }} </v-chip>
+    <template v-slot:item.permissions="{ item }">
+      <v-chip
+        v-for="ite in item.permissions"
+        :key="ite.id"
+        class="ma-1"
+        color="green"
+      >
+        {{ ite }}
+      </v-chip>
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon class="me-2" size="small" @click="editItem(item)">
@@ -107,7 +104,8 @@
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
-const rolesList = ref([]);
+const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
+const permissionsList = ref([]);
 const dialog = ref(false);
 const search = ref("");
 const dialogDelete = ref(false);
@@ -118,7 +116,6 @@ const headers = ref([
     key: "id",
   },
   { title: "Name", key: "name" },
-  { title: "Permissions", key: "permissions" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
 const desserts = ref([]);
@@ -126,32 +123,27 @@ const editedIndex = ref(-1);
 const editedItem = ref({
   id: 0,
   name: "",
-  permission: [],
 });
 const defaultItem = ref({
   id: "",
   name: "",
-  permissions: [],
 });
+
 onMounted(() => {
   initialize();
 });
+
 const formTitle = computed(() => {
-  return editedIndex.value === -1 ? "Create role" : "Edit role";
+  return editedIndex.value === -1 ? "Create class" : "Edit class";
 });
+
 async function initialize() {
-  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
-
-  const response = await axios.get(
-    "http://attendance-management-backend.test/api/roles",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  desserts.value = response.data.roles;
+  const response = await axios.get("http://attendanceBe.test/api/classes", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  desserts.value = response.data.classrooms;
 }
 
 function editItem(item) {
@@ -159,15 +151,18 @@ function editItem(item) {
   editedItem.value = Object.assign({}, item);
   dialog.value = true;
 }
+
 function deleteItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
   dialogDelete.value = true;
 }
+
 function deleteItemConfirm() {
   desserts.value.splice(editedIndex.value, 1);
   closeDelete();
 }
+
 function close() {
   dialog.value = false;
   nextTick(() => {
@@ -175,6 +170,7 @@ function close() {
     editedIndex.value = -1;
   });
 }
+
 function closeDelete() {
   dialogDelete.value = false;
   nextTick(() => {
@@ -182,20 +178,38 @@ function closeDelete() {
     editedIndex.value = -1;
   });
 }
+
 function save() {
   if (editedIndex.value > -1) {
     Object.assign(desserts.value[editedIndex.value], editedItem.value);
+    classUpdate(editedItem.value);
   } else {
     desserts.value.push(editedItem.value);
   }
   close();
 }
+
 watch(dialog, (val) => {
   val || close();
 });
+
 watch(dialogDelete, (val) => {
   val || closeDelete();
 });
+
+async function classUpdate(data) {
+  const response = await axios.put(
+    "http://attendanceBe.test/api/classes/update/" + data.id,
+    {
+      data: data,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log("response", response.data);
+}
 </script>
 
 <style>

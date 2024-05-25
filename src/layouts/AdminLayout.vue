@@ -1,8 +1,8 @@
 <template>
   <v-layout class="rounded rounded-md">
-    <!-- <router-link :to="{ name: 'admin-dashboard' }"> -->
-    <v-app-bar title="Attendance Management System"></v-app-bar>
-    <!-- </router-link> -->
+    <router-link :to="{ name: 'admin-dashboard' }">
+      <v-app-bar title="Attendance Management System"></v-app-bar>
+    </router-link>
 
     <v-navigation-drawer expand-on-hover rail>
       <v-list>
@@ -36,19 +36,23 @@
 
         <v-divider></v-divider>
 
-        <v-list-item
-          prepend-icon="mdi-google-classroom"
-          title="Classes"
-          value="classes"
-        ></v-list-item>
+        <router-link :to="{ name: 'admin-classes' }">
+          <v-list-item
+            prepend-icon="mdi-google-classroom"
+            title="Classes"
+            value="classes"
+          ></v-list-item>
+        </router-link>
 
         <v-divider></v-divider>
 
-        <v-list-item
-          prepend-icon="mdi-cog-outline"
-          title="Setting"
-          value="setting  "
-        ></v-list-item>
+        <router-link :to="{ name: 'admin-settings' }">
+          <v-list-item
+            prepend-icon="mdi-cog-outline"
+            title="Setting"
+            value="setting  "
+          ></v-list-item>
+        </router-link>
       </v-list>
     </v-navigation-drawer>
 

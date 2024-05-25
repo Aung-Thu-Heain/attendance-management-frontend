@@ -109,8 +109,11 @@ let onSubmit = async () => {
   };
 
   try {
+    axios.get("/sanctum/csrf-cookie").then((response) => {
+      console.log("csrf", response.data);
+    });
     let response = await axios.post(
-      "http://attendance-management-backend.test/api/login",
+      "http://attendanceBe.test/api/login",
       formData
     );
     localStorage.setItem("token", response.data.token);

@@ -102,7 +102,14 @@
     </template>
 
     <template v-slot:item.roles="{ item }">
-      <v-chip v-for="ite in item.roles" :key="ite.id"> {{ ite }} </v-chip>
+      <v-chip
+        v-for="ite in item.roles"
+        :key="ite.id"
+        color="green"
+        class="ma-1"
+      >
+        {{ ite }}
+      </v-chip>
     </template>
     <template v-slot:item.actions="{ item }">
       <v-icon class="me-2" size="small" @click="editItem(item)">
@@ -115,10 +122,12 @@
     </template>
   </v-data-table>
 </template>
+
 <script setup>
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
+const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
 const classroomsList = ref([]);
 const rolesList = ref([]);
 const dialog = ref(false);
@@ -145,6 +154,7 @@ const editedItem = ref({
   roles: [],
   classroom: "Kindergarten",
 });
+
 const defaultItem = ref({
   id: "",
   name: "",
@@ -152,75 +162,69 @@ const defaultItem = ref({
   roles: [],
   classroom: "Kindergarten",
 });
+
 onMounted(() => {
   getAllClassrooms();
   getAllRoles();
   initialize();
 });
+
 const formTitle = computed(() => {
   return editedIndex.value === -1 ? "Create user" : "Edit user";
 });
-async function initialize() {
-  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
 
-  const response = await axios.get(
-    "http://attendance-management-backend.test/api/users",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+async function initialize() {
+  const response = await axios.get("http://attendanceBe.test/api/users", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   desserts.value = response.data.users;
 }
-const getAllClassrooms = async () => {
-  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
 
-  const response = await axios.get(
-    "http://attendance-management-backend.test/api/classrooms",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+const getAllClassrooms = async () => {
+  const response = await axios.get("http://attendanceBe.test/api/classrooms", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   let classArray = response.data.classrooms.map((item) => item.name);
 
   classroomsList.value = classArray;
 };
-const getAllRoles = async () => {
-  const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
 
-  const response = await axios.get(
-    "http://attendance-management-backend.test/api/roles",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+const getAllRoles = async () => {
+  const response = await axios.get("http://attendanceBe.test/api/roles", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   let rolesArray = response.data.roles.map((item) => item.name);
   console.log(rolesArray);
 
   rolesList.value = rolesArray;
 };
+
 function editItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
   dialog.value = true;
 }
+
 function deleteItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
   dialogDelete.value = true;
 }
+
 function deleteItemConfirm() {
   desserts.value.splice(editedIndex.value, 1);
   closeDelete();
 }
+
 function close() {
   dialog.value = false;
   nextTick(() => {
@@ -228,6 +232,7 @@ function close() {
     editedIndex.value = -1;
   });
 }
+
 function closeDelete() {
   dialogDelete.value = false;
   nextTick(() => {
@@ -235,6 +240,7 @@ function closeDelete() {
     editedIndex.value = -1;
   });
 }
+
 function save() {
   if (editedIndex.value > -1) {
     Object.assign(desserts.value[editedIndex.value], editedItem.value);
@@ -243,9 +249,11 @@ function save() {
   }
   close();
 }
+
 watch(dialog, (val) => {
   val || close();
 });
+
 watch(dialogDelete, (val) => {
   val || closeDelete();
 });
