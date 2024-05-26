@@ -91,8 +91,8 @@
 
     <template v-slot:item.permissions="{ item }">
       <v-chip
-        v-for="ite in item.permissions"
-        :key="ite.id"
+        v-for="(ite, id) in item.permissions"
+        :key="id"
         class="ma-1"
         color="green"
       >
@@ -114,7 +114,7 @@
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
-const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
+const token = "1|eiHeVA4G97q274dEEYx8cXoRJkSUKyLMp0CuoHu2d1d45d8e";
 const permissionsList = ref([]);
 const dialog = ref(false);
 const search = ref("");
@@ -166,7 +166,9 @@ async function getAllPermissions() {
       Authorization: `Bearer ${token}`,
     },
   });
+
   let permissionArray = response.data.permissions.map((item) => item.name);
+
   permissionsList.value = permissionArray;
 }
 
@@ -222,6 +224,7 @@ watch(dialogDelete, (val) => {
 });
 
 async function roleUpdate(data) {
+  console.log(data);
   const response = await axios.put(
     "http://attendanceBe.test/api/roles/update/" + data.id,
     {

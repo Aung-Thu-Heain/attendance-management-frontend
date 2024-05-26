@@ -43,6 +43,7 @@
                   </v-col>
                   <v-col cols="12" md="6" sm="6">
                     <v-text-field
+                      :rules="mailValidate"
                       v-model="editedItem.email"
                       label="Email"
                     ></v-text-field>
@@ -54,7 +55,7 @@
                       label="Class"
                     ></v-select>
                   </v-col>
-                  <v-col cols="12" md="12" sm="12">
+                  <v-col cols="6" md="6" sm="6">
                     <v-select
                       v-model="editedItem.roles"
                       :items="rolesList"
@@ -62,6 +63,63 @@
                       chips
                       multiple
                     ></v-select>
+                  </v-col>
+                  <v-col cols="12" md="6" sm="6">
+                    <v-text-field
+                      v-model="editedItem.fatherName"
+                      label="Father's name"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6" sm="6">
+                    <v-text-field
+                      v-model="editedItem.dob"
+                      label="Date of birth"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6" sm="6">
+                    <v-text-field
+                      v-model="editedItem.contactNumber"
+                      label="Contact number"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6" sm="6">
+                    <v-text-field
+                      v-model="editedItem.nrcNumber"
+                      label="NRC number"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                    sm="6"
+                    v-if="editedItem.roles.includes('teacher')"
+                  >
+                    <v-text-field
+                      v-model="editedItem.education"
+                      label="Education"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                    sm="6"
+                    v-if="editedItem.roles.includes('teacher')"
+                  >
+                    <v-text-field
+                      v-model="editedItem.startDate"
+                      label="Start date"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="6"
+                    sm="6"
+                    v-if="editedItem.roles.includes('student')"
+                  >
+                    <v-text-field
+                      v-model="editedItem.rollNumber"
+                      label="Roll number"
+                    ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -127,7 +185,7 @@
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
-const token = "1|iVqMhQ3g2zWxs3BO1en3hEBR8fGvIuhC9K76B4F81fe0498d";
+const token = "1|eiHeVA4G97q274dEEYx8cXoRJkSUKyLMp0CuoHu2d1d45d8e";
 const classroomsList = ref([]);
 const rolesList = ref([]);
 const dialog = ref(false);
@@ -153,6 +211,16 @@ const editedItem = ref({
   email: "",
   roles: [],
   classroom: "Kindergarten",
+
+  fatherName: "",
+  dob: "",
+  contactNumber: "",
+  nrcNumber: "",
+
+  education: "",
+  startDate: "",
+
+  rollNumber: "",
 });
 
 const defaultItem = ref({
@@ -161,6 +229,16 @@ const defaultItem = ref({
   email: "",
   roles: [],
   classroom: "Kindergarten",
+
+  fatherName: "",
+  dob: "",
+  contactNumber: "",
+  nrcNumber: "",
+
+  education: "",
+  startDate: "",
+
+  rollNumber: "",
 });
 
 onMounted(() => {
@@ -168,6 +246,16 @@ onMounted(() => {
   getAllRoles();
   initialize();
 });
+
+const mailValidate = [
+  (value) => !!value || "Required.",
+  (value) => (value || "").length <= 20 || "Max 20 characters",
+  (value) => {
+    const pattern =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return pattern.test(value) || "Invalid e-mail.";
+  },
+];
 
 const formTitle = computed(() => {
   return editedIndex.value === -1 ? "Create user" : "Edit user";
@@ -203,7 +291,6 @@ const getAllRoles = async () => {
   });
 
   let rolesArray = response.data.roles.map((item) => item.name);
-  console.log(rolesArray);
 
   rolesList.value = rolesArray;
 };
@@ -251,6 +338,7 @@ function save() {
 }
 
 watch(dialog, (val) => {
+  console.log("dialog watch", val);
   val || close();
 });
 
