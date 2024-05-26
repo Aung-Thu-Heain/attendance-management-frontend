@@ -20,7 +20,7 @@ function updateTime() {
   var cd = new Date();
 
   time.value =
-    zeroPadding(cd.getHours(), 2) +
+    zeroPadding(cd.getHours() > 12 ? cd.getHours() - 12 : cd.getHours(), 2) +
     ":" +
     zeroPadding(cd.getMinutes(), 2) +
     ":" +
@@ -53,6 +53,7 @@ body {
   background: radial-gradient(ellipse at center, #0a2e38 0%, #000000 70%);
   background-size: 100%;
 }
+
 p {
   margin: 0;
   padding: 0;

@@ -173,7 +173,10 @@
       <v-icon class="me-2" size="small" @click="editItem(item)">
         mdi-pencil
       </v-icon>
-      <v-icon size="small" @click="deleteItem(item)"> mdi-delete </v-icon>
+      <v-icon size="small" class="me-2" @click="deleteItem(item)">
+        mdi-delete
+      </v-icon>
+      <v-icon size="small"> mdi-eye-circle-outline </v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize"> Reset </v-btn>
