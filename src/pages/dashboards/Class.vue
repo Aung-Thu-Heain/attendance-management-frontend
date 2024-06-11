@@ -104,7 +104,7 @@
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
-const token = "1|eiHeVA4G97q274dEEYx8cXoRJkSUKyLMp0CuoHu2d1d45d8e";
+const token = localStorage.getItem("token");
 const permissionsList = ref([]);
 const dialog = ref(false);
 const search = ref("");

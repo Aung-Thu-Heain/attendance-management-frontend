@@ -46,8 +46,9 @@
                     <v-select
                       v-model="editedItem.permissions"
                       :items="permissionsList"
-                      label="Role"
-                      chips
+                      label="Permission"
+                      item-title="name"
+                      item-value="id"
                       multiple
                     ></v-select>
                   </v-col>
@@ -96,7 +97,7 @@
         class="ma-1"
         color="green"
       >
-        {{ ite }}
+        {{ ite.name }}
       </v-chip>
     </template>
     <template v-slot:item.actions="{ item }">
@@ -113,8 +114,9 @@
 <script setup>
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { compileScript } from "vue/compiler-sfc";
 
-const token = "1|eiHeVA4G97q274dEEYx8cXoRJkSUKyLMp0CuoHu2d1d45d8e";
+const token = localStorage.getItem("token");
 const permissionsList = ref([]);
 const dialog = ref(false);
 const search = ref("");
@@ -157,6 +159,7 @@ async function initialize() {
       Authorization: `Bearer ${token}`,
     },
   });
+
   desserts.value = response.data.roles;
 }
 
@@ -167,9 +170,7 @@ async function getAllPermissions() {
     },
   });
 
-  let permissionArray = response.data.permissions.map((item) => item.name);
-
-  permissionsList.value = permissionArray;
+  permissionsList.value = response.data.permissions;
 }
 
 function editItem(item) {
@@ -179,12 +180,14 @@ function editItem(item) {
 }
 
 function deleteItem(item) {
+  console.log(item);
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
   dialogDelete.value = true;
 }
 
 function deleteItemConfirm() {
+  roleDelete(editedItem.value.id);
   desserts.value.splice(editedIndex.value, 1);
   closeDelete();
 }
@@ -210,7 +213,9 @@ function save() {
     Object.assign(desserts.value[editedIndex.value], editedItem.value);
     roleUpdate(editedItem.value);
   } else {
+    editedItem.value.id = desserts.value.length + 1;
     desserts.value.push(editedItem.value);
+    roleCreate(editedItem.value);
   }
   close();
 }
@@ -224,11 +229,10 @@ watch(dialogDelete, (val) => {
 });
 
 async function roleUpdate(data) {
-  console.log(data);
   const response = await axios.put(
     "http://attendanceBe.test/api/roles/update/" + data.id,
+    data,
     {
-      data: data,
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -236,6 +240,33 @@ async function roleUpdate(data) {
   );
 
   console.log("response", response.data);
+}
+
+async function roleCreate(data) {
+  const response = await axios.post(
+    "http://attendanceBe.test/api/roles/create",
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log("response", response.data.message);
+}
+
+async function roleDelete(id) {
+  const response = await axios.delete(
+    "http://attendanceBe.test/api/roles/delete/" + id,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log(response.data.message);
 }
 </script>
 

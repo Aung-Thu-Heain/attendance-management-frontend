@@ -15,7 +15,8 @@ axios.interceptors.request.use((config) => {
   }
   config.headers["Content-Type"] = contentType;
   config.headers["Accept"] = "application/json";
-  config.headers["Authorization"] = "";
+  config.headers["Authorization"] =
+    "2|T8QdxpOaP3Dex9hnLqLOmCT5Vul3KOfAGR8yrncUfb851e28";
 
   return config;
 });

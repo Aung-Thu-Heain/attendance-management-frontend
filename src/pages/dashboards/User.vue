@@ -39,6 +39,7 @@
                     <v-text-field
                       v-model="editedItem.name"
                       label="Name"
+                      :rules="[required]"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" md="6" sm="6">
@@ -49,9 +50,18 @@
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" md="6" sm="6">
+                    <v-text-field
+                      v-model="editedItem.password"
+                      type="password"
+                      label="Password"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6" sm="6">
                     <v-select
                       v-model="editedItem.classroom"
                       :items="classroomsList"
+                      item-title="name"
+                      item-value="id"
                       label="Class"
                     ></v-select>
                   </v-col>
@@ -59,9 +69,10 @@
                     <v-select
                       v-model="editedItem.roles"
                       :items="rolesList"
+                      item-title="name"
+                      item-value="id"
                       label="Role"
                       chips
-                      multiple
                     ></v-select>
                   </v-col>
                   <v-col cols="12" md="6" sm="6">
@@ -88,34 +99,19 @@
                       label="NRC number"
                     ></v-text-field>
                   </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                    sm="6"
-                    v-if="editedItem.roles.includes('teacher')"
-                  >
+                  <v-col cols="12" md="6" sm="6" v-if="editedItem.roles == 2">
                     <v-text-field
                       v-model="editedItem.education"
                       label="Education"
                     ></v-text-field>
                   </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                    sm="6"
-                    v-if="editedItem.roles.includes('teacher')"
-                  >
+                  <v-col cols="12" md="6" sm="6" v-if="editedItem.roles == 2">
                     <v-text-field
                       v-model="editedItem.startDate"
                       label="Start date"
                     ></v-text-field>
                   </v-col>
-                  <v-col
-                    cols="12"
-                    md="6"
-                    sm="6"
-                    v-if="editedItem.roles.includes('student')"
-                  >
+                  <v-col cols="12" md="6" sm="6" v-if="editedItem.roles == 3">
                     <v-text-field
                       v-model="editedItem.rollNumber"
                       label="Roll number"
@@ -159,6 +155,12 @@
       </v-toolbar>
     </template>
 
+    <template v-slot:item.classroom="{ item }">
+      <v-chip color="green" class="ma-1">
+        {{ item.classroom.name }}
+      </v-chip>
+    </template>
+
     <template v-slot:item.roles="{ item }">
       <v-chip
         v-for="ite in item.roles"
@@ -166,7 +168,7 @@
         color="green"
         class="ma-1"
       >
-        {{ ite }}
+        {{ ite.name }}
       </v-chip>
     </template>
     <template v-slot:item.actions="{ item }">
@@ -188,7 +190,7 @@
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
-const token = "1|eiHeVA4G97q274dEEYx8cXoRJkSUKyLMp0CuoHu2d1d45d8e";
+const token = localStorage.getItem("token");
 const classroomsList = ref([]);
 const rolesList = ref([]);
 const dialog = ref(false);
@@ -212,8 +214,9 @@ const editedItem = ref({
   id: 0,
   name: "",
   email: "",
+  password: "",
   roles: [],
-  classroom: "Kindergarten",
+  classroom: "",
 
   fatherName: "",
   dob: "",
@@ -230,8 +233,9 @@ const defaultItem = ref({
   id: "",
   name: "",
   email: "",
+  password: "",
   roles: [],
-  classroom: "Kindergarten",
+  classroom: "",
 
   fatherName: "",
   dob: "",
@@ -252,7 +256,7 @@ onMounted(() => {
 
 const mailValidate = [
   (value) => !!value || "Required.",
-  (value) => (value || "").length <= 20 || "Max 20 characters",
+  (value) => (value || "").length <= 30 || "Max 30 characters",
   (value) => {
     const pattern =
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -283,7 +287,7 @@ const getAllClassrooms = async () => {
 
   let classArray = response.data.classrooms.map((item) => item.name);
 
-  classroomsList.value = classArray;
+  classroomsList.value = response.data.classrooms;
 };
 
 const getAllRoles = async () => {
@@ -295,7 +299,7 @@ const getAllRoles = async () => {
 
   let rolesArray = response.data.roles.map((item) => item.name);
 
-  rolesList.value = rolesArray;
+  rolesList.value = response.data.roles;
 };
 
 function editItem(item) {
@@ -308,9 +312,11 @@ function deleteItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
   dialogDelete.value = true;
+  console.log(item);
 }
 
 function deleteItemConfirm() {
+  userDelete(editedItem.value.id);
   desserts.value.splice(editedIndex.value, 1);
   closeDelete();
 }
@@ -335,7 +341,9 @@ function save() {
   if (editedIndex.value > -1) {
     Object.assign(desserts.value[editedIndex.value], editedItem.value);
   } else {
+    editedItem.value.id = desserts.value.length + 1;
     desserts.value.push(editedItem.value);
+    userCreate(editedItem.value);
   }
   close();
 }
@@ -348,6 +356,37 @@ watch(dialog, (val) => {
 watch(dialogDelete, (val) => {
   val || closeDelete();
 });
+
+let required = (v) => {
+  return !!v || "Field is required";
+};
+
+async function userCreate(user) {
+  const response = await axios.post(
+    "http://attendanceBe.test/api/users/create",
+    user,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log("ddd", response.data);
+}
+
+async function userDelete(id) {
+  const response = await axios.delete(
+    "http://attendaceBe.test/api/users/delete/" + id,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log(response.data.message);
+}
 </script>
 
 <style>
