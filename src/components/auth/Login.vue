@@ -90,8 +90,10 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import {useLoginStore} from "@/stores/auth";
 
 const router = useRouter();
+const authStore = useLoginStore();
 
 let form = ref("");
 let email = ref("");
@@ -108,19 +110,10 @@ let onSubmit = async () => {
     device_name: "browser",
   };
 
-  try {
-    axios.get("/sanctum/csrf-cookie").then((response) => {
-      console.log("csrf", response.data);
-    });
-    let response = await axios.post(
-      "http://attendanceBe.test/api/login",
-      formData
-    );
-    localStorage.setItem("token", response.data.token);
-    router.push({ name: "admin-dashboard" });
-  } catch (e) {
-    error.value = e.response.data.message;
-  }
+  await authStore.login(formData).then((resp)=>{
+    router.push({name:'admin-users'});
+  })
+  
 };
 
 let required = (v) => {

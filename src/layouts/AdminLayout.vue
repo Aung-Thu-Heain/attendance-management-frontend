@@ -1,6 +1,6 @@
 <template>
   <v-layout class="rounded rounded-md">
-    <router-link :to="{ name: 'admin-dashboard' }">
+    <router-link :to="{ name: 'admin-users' }">
       <v-app-bar title="Attendance Management System"></v-app-bar>
     </router-link>
 

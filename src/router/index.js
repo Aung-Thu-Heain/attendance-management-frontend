@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useLoginStore } from '@/stores/auth';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,14 +13,16 @@ const router = createRouter({
       path: "/login",
       name: "login",
       component: () => import("@components/auth/Login.vue"),
+      meta: {
+        isAuthRoute: true
+      }
     },
     {
       path: "/dashboard",
-      name: "admin-dashboard",
-      component: () => import("@layouts/AdminLayout.vue"),
-      meta: {
-        isAuthRoute: true,
+      meta:{
+        requiresAuth:true
       },
+      component: () => import("@layouts/AdminLayout.vue"),
       children: [
         {
           path: "users",
@@ -45,5 +48,23 @@ const router = createRouter({
     },
   ],
 });
+
+router.beforeEach((to, from, next) => {
+  const loginStore = useLoginStore();
+  if (to.meta.requiresAuth && !loginStore.isLoggedIn) {
+    next({ name: 'login' });
+  }
+
+  if (
+    (to.meta.isAuthRoute && loginStore.isLoggedIn) ||
+    (to.name === 'login' && loginStore.isLoggedIn)
+  ) {
+    // Redirect to Super Admin dashboard
+    next({ name: 'admin-users' });
+    return;
+  }
+  next();
+});
+
 
 export default router;

@@ -189,13 +189,14 @@
 <script setup>
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-
+import {useUserStore} from '@/stores/user';
 const token = localStorage.getItem("token");
 const classroomsList = ref([]);
 const rolesList = ref([]);
 const dialog = ref(false);
 const search = ref("");
 const dialogDelete = ref(false);
+const userStore = useUserStore();
 const headers = ref([
   {
     title: "Id",
@@ -208,7 +209,7 @@ const headers = ref([
   { title: "Role", key: "roles" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
-const desserts = ref([]);
+const desserts = computed(()=>userStore.getUsers);
 const editedIndex = ref(-1);
 const editedItem = ref({
   id: 0,
@@ -269,13 +270,7 @@ const formTitle = computed(() => {
 });
 
 async function initialize() {
-  const response = await axios.get("http://attendanceBe.test/api/users", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  desserts.value = response.data.users;
+  await userStore.getUsersFun();
 }
 
 const getAllClassrooms = async () => {
