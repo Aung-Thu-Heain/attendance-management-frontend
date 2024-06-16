@@ -189,14 +189,17 @@
 <script setup>
 import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-import {useUserStore} from '@/stores/user';
-const token = localStorage.getItem("token");
+import { useUserStore } from "@/stores/user";
+import { useRoleStore } from "@/stores/role";
 const classroomsList = ref([]);
-const rolesList = ref([]);
+
 const dialog = ref(false);
 const search = ref("");
+
 const dialogDelete = ref(false);
 const userStore = useUserStore();
+const roleStore = useRoleStore();
+
 const headers = ref([
   {
     title: "Id",
@@ -209,7 +212,12 @@ const headers = ref([
   { title: "Role", key: "roles" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
-const desserts = computed(()=>userStore.getUsers);
+const desserts = computed(() => userStore.getUsers);
+const rolesList = computed(() => roleStore.getRoles);
+
+console.log(userStore.getUsers);
+console.log(roleStore.getRoles);
+
 const editedIndex = ref(-1);
 const editedItem = ref({
   id: 0,
@@ -251,7 +259,6 @@ const defaultItem = ref({
 
 onMounted(() => {
   getAllClassrooms();
-  getAllRoles();
   initialize();
 });
 
@@ -270,31 +277,14 @@ const formTitle = computed(() => {
 });
 
 async function initialize() {
+  await roleStore.getRoleFun();
   await userStore.getUsersFun();
 }
 
 const getAllClassrooms = async () => {
-  const response = await axios.get("http://attendanceBe.test/api/classrooms", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  let classArray = response.data.classrooms.map((item) => item.name);
+  const response = await axios.get("http://attendanceBe.test/api/classrooms");
 
   classroomsList.value = response.data.classrooms;
-};
-
-const getAllRoles = async () => {
-  const response = await axios.get("http://attendanceBe.test/api/roles", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  let rolesArray = response.data.roles.map((item) => item.name);
-
-  rolesList.value = response.data.roles;
 };
 
 function editItem(item) {
@@ -307,7 +297,6 @@ function deleteItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
   dialogDelete.value = true;
-  console.log(item);
 }
 
 function deleteItemConfirm() {
@@ -359,28 +348,14 @@ let required = (v) => {
 async function userCreate(user) {
   const response = await axios.post(
     "http://attendanceBe.test/api/users/create",
-    user,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    user
   );
-
-  console.log("ddd", response.data);
 }
 
 async function userDelete(id) {
   const response = await axios.delete(
-    "http://attendaceBe.test/api/users/delete/" + id,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    "http://attendaceBe.test/api/users/delete/" + id
   );
-
-  console.log(response.data.message);
 }
 </script>
 
