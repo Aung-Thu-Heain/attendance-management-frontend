@@ -1,5 +1,6 @@
 import { HTTP } from "@/services/http-common";
 import { defineStore } from "pinia";
+import { tr } from "vuetify/locale";
 
 export const useRoleStore = defineStore("roleStore", {
   state: () => ({
@@ -22,6 +23,47 @@ export const useRoleStore = defineStore("roleStore", {
         .catch((error) => {
           this.is_loading = false;
           this.is_error = true;
+        });
+    },
+    async createRoleFun(data) {
+      this.is_loading = true;
+      await HTTP.post("/roles/create", data)
+        .then((res) => {
+          this.is_loading = false;
+          console.log(res.data.message);
+        })
+        .catch((error) => {
+          this.is_loading = false;
+          this.is_error = true;
+          console.log(error);
+        });
+    },
+
+    async updateRoleFun(id, data) {
+      this.is_loading = true;
+      await HTTP.put("/roles/update/" + id, data)
+        .then((res) => {
+          this.is_loading = false;
+          console.log(res);
+        })
+        .catch((error) => {
+          this.is_loading = false;
+          this.is_error = true;
+          console.log(error);
+        });
+    },
+
+    async deleteRoleFun(id) {
+      this.is_loading = true;
+      await HTTP.delete("/roles/delete/" + id)
+        .then((res) => {
+          this.is_loading = false;
+          console.log(res.data.message);
+        })
+        .catch((error) => {
+          this.is_loading = false;
+          this.is_error = true;
+          console.log(error);
         });
     },
   },

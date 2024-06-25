@@ -112,12 +112,16 @@
   </v-data-table>
 </template>
 <script setup>
-import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-import { compileScript } from "vue/compiler-sfc";
+import { useRoleStore } from "@/stores/role";
+import { usePermissionStore } from "@/stores/permission";
 
-const token = localStorage.getItem("token");
-const permissionsList = ref([]);
+const roleStore = useRoleStore();
+const permissionStore = usePermissionStore();
+
+const permissionsList = computed(() => permissionStore.getPermissions);
+const desserts = computed(() => roleStore.getRoles);
+
 const dialog = ref(false);
 const search = ref("");
 const dialogDelete = ref(false);
@@ -131,7 +135,7 @@ const headers = ref([
   { title: "Permissions", key: "permissions" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
-const desserts = ref([]);
+
 const editedIndex = ref(-1);
 const editedItem = ref({
   id: 0,
@@ -146,32 +150,16 @@ const defaultItem = ref({
 
 onMounted(() => {
   initialize();
-  getAllPermissions();
 });
+
+async function initialize() {
+  await roleStore.getRoleFun();
+  await permissionStore.getPermissionFun();
+}
 
 const formTitle = computed(() => {
   return editedIndex.value === -1 ? "Create role" : "Edit role";
 });
-
-async function initialize() {
-  const response = await axios.get("http://attendanceBe.test/api/roles", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  desserts.value = response.data.roles;
-}
-
-async function getAllPermissions() {
-  const response = await axios.get("http://attendanceBe.test/api/permissions", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  permissionsList.value = response.data.permissions;
-}
 
 function editItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
@@ -187,7 +175,7 @@ function deleteItem(item) {
 }
 
 function deleteItemConfirm() {
-  roleDelete(editedItem.value.id);
+  roleStore.deleteRoleFun(editedItem.value.id);
   desserts.value.splice(editedIndex.value, 1);
   closeDelete();
 }
@@ -211,11 +199,11 @@ function closeDelete() {
 function save() {
   if (editedIndex.value > -1) {
     Object.assign(desserts.value[editedIndex.value], editedItem.value);
-    roleUpdate(editedItem.value);
+    roleStore.updateRoleFun(editedItem.value.id, editedItem.value);
   } else {
     editedItem.value.id = desserts.value.length + 1;
     desserts.value.push(editedItem.value);
-    roleCreate(editedItem.value);
+    roleStore.createRoleFun(editedItem.value);
   }
   close();
 }
@@ -227,47 +215,6 @@ watch(dialog, (val) => {
 watch(dialogDelete, (val) => {
   val || closeDelete();
 });
-
-async function roleUpdate(data) {
-  const response = await axios.put(
-    "http://attendanceBe.test/api/roles/update/" + data.id,
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  console.log("response", response.data);
-}
-
-async function roleCreate(data) {
-  const response = await axios.post(
-    "http://attendanceBe.test/api/roles/create",
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  console.log("response", response.data.message);
-}
-
-async function roleDelete(id) {
-  const response = await axios.delete(
-    "http://attendanceBe.test/api/roles/delete/" + id,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  console.log(response.data.message);
-}
 </script>
 
 <style>

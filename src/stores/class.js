@@ -1,23 +1,22 @@
 import { HTTP } from "@/services/http-common";
 import { defineStore } from "pinia";
-import { fa } from "vuetify/locale";
 
-export const useUserStore = defineStore("userStore", {
+export const useClassStore = defineStore("userClass", {
   state: () => ({
     is_loading: false,
     is_error: false,
-    users: [],
+    classes: [],
   }),
   getters: {
     getLoading: (state) => state.is_loading,
-    getUsers: (state) => state.users,
+    getClass: (state) => state.classes,
   },
   actions: {
-    async getUsersFun() {
+    async getClassFun() {
       this.is_loading = true;
-      await HTTP.get("/users")
-        .then((resp) => {
-          this.users = resp.data.users;
+      await HTTP.get("/classrooms")
+        .then((res) => {
+          this.classes = res.data.classrooms;
           this.is_loading = false;
         })
         .catch((error) => {
@@ -25,22 +24,35 @@ export const useUserStore = defineStore("userStore", {
           this.is_error = true;
         });
     },
-    async createUserFun(data) {
+
+    async createClassFun(data) {
       this.is_loading = true;
-      await HTTP.post("/users/create", data)
+      await HTTP.post("/classes/create", data)
         .then((res) => {
           this.is_loading = false;
           console.log(res.data.message);
         })
         .catch((error) => {
           this.is_loading = false;
-          this.is_error = false;
+          this.is_error = true;
           console.log(error);
         });
     },
-    async deleteUserFun(id) {
+    async updateClassFun(id, data) {
       this.is_loading = true;
-      await HTTP.delete("/users/delete/" + id)
+      await HTTP.put("/classes/update/" + id, data)
+        .then((res) => {
+          this.is_loading = false;
+        })
+        .catch((error) => {
+          this.is_loading = false;
+          this.is_error = true;
+          console.log(error);
+        });
+    },
+    async deleteClassFun(id) {
+      this.is_loading = true;
+      await HTTP.delete("/classes/delete/" + id)
         .then((res) => {
           this.is_loading = false;
           console.log(res.data.message);

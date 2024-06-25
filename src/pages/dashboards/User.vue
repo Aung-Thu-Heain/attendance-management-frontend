@@ -187,11 +187,10 @@
 </template>
 
 <script setup>
-import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useUserStore } from "@/stores/user";
 import { useRoleStore } from "@/stores/role";
-const classroomsList = ref([]);
+import { useClassStore } from "@/stores/class";
 
 const dialog = ref(false);
 const search = ref("");
@@ -199,6 +198,7 @@ const search = ref("");
 const dialogDelete = ref(false);
 const userStore = useUserStore();
 const roleStore = useRoleStore();
+const classStore = useClassStore();
 
 const headers = ref([
   {
@@ -214,9 +214,7 @@ const headers = ref([
 ]);
 const desserts = computed(() => userStore.getUsers);
 const rolesList = computed(() => roleStore.getRoles);
-
-console.log(userStore.getUsers);
-console.log(roleStore.getRoles);
+const classroomsList = computed(() => classStore.getClass);
 
 const editedIndex = ref(-1);
 const editedItem = ref({
@@ -258,9 +256,14 @@ const defaultItem = ref({
 });
 
 onMounted(() => {
-  getAllClassrooms();
   initialize();
 });
+
+async function initialize() {
+  await roleStore.getRoleFun();
+  await userStore.getUsersFun();
+  await classStore.getClassFun();
+}
 
 const mailValidate = [
   (value) => !!value || "Required.",
@@ -276,17 +279,6 @@ const formTitle = computed(() => {
   return editedIndex.value === -1 ? "Create user" : "Edit user";
 });
 
-async function initialize() {
-  await roleStore.getRoleFun();
-  await userStore.getUsersFun();
-}
-
-const getAllClassrooms = async () => {
-  const response = await axios.get("http://attendanceBe.test/api/classrooms");
-
-  classroomsList.value = response.data.classrooms;
-};
-
 function editItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
   editedItem.value = Object.assign({}, item);
@@ -300,7 +292,7 @@ function deleteItem(item) {
 }
 
 function deleteItemConfirm() {
-  userDelete(editedItem.value.id);
+  userStore.deleteUserFun(editedItem.value.id);
   desserts.value.splice(editedIndex.value, 1);
   closeDelete();
 }
@@ -327,7 +319,7 @@ function save() {
   } else {
     editedItem.value.id = desserts.value.length + 1;
     desserts.value.push(editedItem.value);
-    userCreate(editedItem.value);
+    userStore.createUserFun(editedItem.value);
   }
   close();
 }
@@ -344,19 +336,6 @@ watch(dialogDelete, (val) => {
 let required = (v) => {
   return !!v || "Field is required";
 };
-
-async function userCreate(user) {
-  const response = await axios.post(
-    "http://attendanceBe.test/api/users/create",
-    user
-  );
-}
-
-async function userDelete(id) {
-  const response = await axios.delete(
-    "http://attendaceBe.test/api/users/delete/" + id
-  );
-}
 </script>
 
 <style>

@@ -101,11 +101,11 @@
   </v-data-table>
 </template>
 <script setup>
-import axios from "axios";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useClassStore } from "@/stores/class";
 
-const token = localStorage.getItem("token");
-const permissionsList = ref([]);
+const classStore = useClassStore();
+
 const dialog = ref(false);
 const search = ref("");
 const dialogDelete = ref(false);
@@ -118,7 +118,7 @@ const headers = ref([
   { title: "Name", key: "name" },
   { title: "Actions", key: "actions", sortable: false },
 ]);
-const desserts = ref([]);
+const desserts = computed(() => classStore.getClass);
 const editedIndex = ref(-1);
 const editedItem = ref({
   id: 0,
@@ -133,18 +133,13 @@ onMounted(() => {
   initialize();
 });
 
+async function initialize() {
+  classStore.getClassFun();
+}
+
 const formTitle = computed(() => {
   return editedIndex.value === -1 ? "Create class" : "Edit class";
 });
-
-async function initialize() {
-  const response = await axios.get("http://attendanceBe.test/api/classes", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  desserts.value = response.data.classrooms;
-}
 
 function editItem(item) {
   editedIndex.value = desserts.value.indexOf(item);
@@ -159,6 +154,7 @@ function deleteItem(item) {
 }
 
 function deleteItemConfirm() {
+  classStore.deleteClassFun(editedItem.value.id);
   desserts.value.splice(editedIndex.value, 1);
   closeDelete();
 }
@@ -182,9 +178,11 @@ function closeDelete() {
 function save() {
   if (editedIndex.value > -1) {
     Object.assign(desserts.value[editedIndex.value], editedItem.value);
-    classUpdate(editedItem.value);
+    classStore.updateClassFun(editedItem.value.id, editedItem.value);
   } else {
+    editedItem.value.id = desserts.value.length + 1;
     desserts.value.push(editedItem.value);
+    classStore.createClassFun(editedItem.value);
   }
   close();
 }
@@ -196,20 +194,6 @@ watch(dialog, (val) => {
 watch(dialogDelete, (val) => {
   val || closeDelete();
 });
-
-async function classUpdate(data) {
-  const response = await axios.put(
-    "http://attendanceBe.test/api/classes/update/" + data.id,
-    {
-      data: data,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  console.log("response", response.data);
-}
 </script>
 
 <style>
